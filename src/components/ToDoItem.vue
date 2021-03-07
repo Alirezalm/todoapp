@@ -1,15 +1,32 @@
 <template>
-  <div id="to-do-item" class="custom-checkbox">
-    <input type="checkbox" :id="id" :checked="isDone">
-    <label class="checkbox-label" :for="id" >{{ label }}</label>
+  <div id="to-do-item">
+    <div class="stack-small" v-if="!isEditing">
+      <div class="custom-checkbox">
+        <input type="checkbox" class="checkbox" :id="id" :checked="isDone"
+               @change="$emit('checkbox-changed')"/>
+        <label :for="id" class="checkbox-label">{{ label }}</label>
+      </div>
+      <div class="btn-group">
+        <button type="button" class="btn" @click="toggleToItemEditForm">
+          Edit <span class="visually-hidden">{{ label }}</span>
+        </button>
+        <button type="button" class="btn btn__danger" @click="deleteToDo">
+          Delete <span class="visually-hidden">{{ label }}</span>
+        </button>
+      </div>
+    </div>
+    <to-do-item-edit-form v-else @item-edited="itemEdited"
+                      @edit-cancelled="editCancelled" :id="id" :label="label"></to-do-item-edit-form>
   </div>
 </template>
 
 <script>
 
+import ToDoItemEditForm from "@/components/ToDoItemEditForm";
+
 export default {
   name: "ToDoItem",
-
+  components: {ToDoItemEditForm},
   props: {
 
     label: {required: true, type: String},
@@ -17,9 +34,25 @@ export default {
     id: {required: true, type: String}
 
   },
-  data(){
+  methods: {
+    itemEdited(newLabel) {
+      this.$emit('item-edited', newLabel);
+      this.isEditing = false;
+    },
+    editCancelled() {
+      this.isEditing = false;
+    },
+    deleteToDo() {
+      this.$emit('item-deleted');
+    },
+    toggleToItemEditForm() {
+      this.isEditing = true;
+    }
+  },
+  data() {
     return {
       isDone: this.done,
+      isEditing: false
     }
   }
 }
@@ -39,6 +72,7 @@ export default {
   display: block;
   margin-bottom: 5px;
 }
+
 .custom-checkbox > .checkbox {
   font-family: Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -59,11 +93,13 @@ export default {
   -moz-appearance: none;
   appearance: none;
 }
+
 .custom-checkbox > input:focus {
   outline: 3px dashed #fd0;
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px;
 }
+
 .custom-checkbox {
   font-family: Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -77,6 +113,7 @@ export default {
   padding-left: 40px;
   clear: left;
 }
+
 .custom-checkbox > input[type="checkbox"] {
   -webkit-font-smoothing: antialiased;
   cursor: pointer;
@@ -89,6 +126,7 @@ export default {
   margin: 0;
   opacity: 0;
 }
+
 .custom-checkbox > .checkbox-label {
   font-size: inherit;
   font-family: inherit;
@@ -99,6 +137,7 @@ export default {
   cursor: pointer;
   touch-action: manipulation;
 }
+
 .custom-checkbox > label::before {
   content: "";
   box-sizing: border-box;
@@ -110,10 +149,12 @@ export default {
   border: 2px solid currentColor;
   background: transparent;
 }
+
 .custom-checkbox > input[type="checkbox"]:focus + label::before {
   border-width: 4px;
   outline: 3px dashed #228bec;
 }
+
 .custom-checkbox > label::after {
   box-sizing: content-box;
   content: "";
@@ -129,9 +170,11 @@ export default {
   opacity: 0;
   background: transparent;
 }
+
 .custom-checkbox > input[type="checkbox"]:checked + label::after {
   opacity: 1;
 }
+
 @media only screen and (min-width: 40rem) {
   label,
   input,

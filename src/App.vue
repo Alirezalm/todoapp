@@ -1,10 +1,15 @@
 <template>
   <div id="app">
     <h3>To Do List</h3>
+    <h3 id="list-summary">{{ listSummary }}</h3>
     <to-do-form @todo-added="addToDo"></to-do-form>
     <ul>
       <li v-for="item in ToDoItems" :key="item.id">
-        <to-do-item :label="item.label" :done="item.done" :id="item.id"></to-do-item>
+        <to-do-item :label="item.label" :done="item.done" :id="item.id"
+                    @checkbox-changed="updateDoneStatus(item.id)"
+                    @item-deleted="deleteToDo(item.id)"
+                    @item-edited="editToDo(item.id, $event)">
+        </to-do-item>
       </li>
     </ul>
   </div>
@@ -33,6 +38,14 @@ export default {
     }
   },
   methods: {
+    deleteToDo(toDoId) {
+      const itemIndex = this.ToDoItems.findIndex(item => item.id === toDoId);
+      this.ToDoItems.splice(itemIndex, 1);
+    },
+    editToDo(toDoId, newLabel) {
+      const toDoToEdit = this.ToDoItems.find(item => item.id === toDoId);
+      toDoToEdit.label = newLabel;
+    },
     addToDo(toDoLabel) {
       const new_data = {
         id: uniqueId('todo-'),
@@ -40,10 +53,14 @@ export default {
         done: false
       }
       this.ToDoItems.push(new_data)
+    },
+    updateDoneStatus(toDoId) {
+      const toDoToUpdate = this.ToDoItems.find(item => item.id === toDoId)
+      toDoToUpdate.done = !toDoToUpdate.done
     }
   },
   computed: {
-    listSummary(){
+    listSummary() {
       const numberFinishedItems = this.ToDoItems.filter(item => item.done).length
       return `${numberFinishedItems} out of ${this.ToDoItems.length} items completed`
     }
